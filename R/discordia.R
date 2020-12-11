@@ -373,38 +373,38 @@ discordia.title <- function(fit,wetherill,sigdig=2,DOPLOT=TRUE,...){
                             list(a=rounded.disp[1],b=rounded.disp[3],c=rounded.disp[2]))
     }
     extrarow <- fit$format>3 & !wetherill
-    outLinesI <- c()
+    outLinesL <- NULL
     if (fit$model==1 & extrarow){
         if(DOPLOT) mymtext(line1,line=3,...)
         if(DOPLOT) mymtext(line2,line=2,...)
         if(DOPLOT) mymtext(line3,line=1,...)
         if(DOPLOT) mymtext(line4,line=0,...)
-        outLinesI <- c(1,2,3,4)
+        outLinesL <- list(line1,line2,line3,line4)
     } else if (fit$model==2 & extrarow){
         if(DOPLOT) mymtext(line1,line=2,...)
         if(DOPLOT) mymtext(line2,line=1,...)
         if(DOPLOT) mymtext(line3,line=0,...)
-        outLinesI <- c(1,2,3)
+        outLinesL <- list(line1,line2,line3)
     } else if (fit$model==3 & extrarow){
         if(DOPLOT) mymtext(line1,line=3,...)
         if(DOPLOT) mymtext(line2,line=2,...)
         if(DOPLOT) mymtext(line3,line=1,...)
         if(DOPLOT) mymtext(line4,line=0,...)
-        outLinesI <- c(1,2,3,4)
+        outLinesL <- list(line1,line2,line3,line4)
     } else if (fit$model==1){
         if(DOPLOT) mymtext(line1,line=2,...)
         if(DOPLOT) mymtext(line2,line=1,...)
         if(DOPLOT) mymtext(line4,line=0,...)
-        outLinesI <- c(1,2,4)
+        outLinesL <- list(line1,line2,line4)
     } else if (fit$model==2){
         if(DOPLOT) mymtext(line1,line=1,...)
         if(DOPLOT) mymtext(line2,line=0,...)
-        outLinesI <- c(1,2)
+        outLinesL <- list(line1,line2)
     } else if (fit$model==3){
         if(DOPLOT) mymtext(line1,line=2,...)
         if(DOPLOT) mymtext(line2,line=1,...)
         if(DOPLOT) mymtext(line4,line=0,...)
-        outLinesI <- c(1,2,4)
+        outLinesL <- list(line1,line2,line4)
     }
-    if(length(outLinesI) > 0L) list(line1,line2,line3,line4)[outLinesI] else NULL
+    invisible(outLinesL)
 }
