@@ -268,7 +268,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
                       concordia.col='darksalmon',exterr=FALSE,
                       show.age=0,sigdig=2,common.Pb=0,ticks=5,
                       anchor=list(FALSE,NA),hide=NULL,omit=NULL,
-                      omit.fill=NA,omit.stroke='grey',...){    
+                      omit.fill=NA,omit.stroke='grey',DOPLOT=TRUE,...){    
     if (is.null(x)){
         emptyconcordia(tlim=tlim,alpha=alpha,type=type,exterr=exterr,
                        concordia.col=concordia.col,ticks=ticks,...)
@@ -280,41 +280,49 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
     if (common.Pb<1) X <- x
     else X <- Pb0corr(x,option=common.Pb,omit4c=unique(c(hide,omit)))
     X2plot <- subset(X,subset=plotit)
-    lims <- prepare.concordia.line(x=X2plot,tlim=tlim,type=type,...)
+    if(DOPLOT) lims <- prepare.concordia.line(x=X2plot,tlim=tlim,type=type,...)
     fit <- NULL
     if (show.age>1){
         wetherill <- (type==1)
         x2calc <- subset(x,subset=calcit)
         fit <- concordia.intersection.ludwig(x2calc,wetherill=wetherill,exterr=exterr,
                                              alpha=alpha,model=(show.age-1),anchor=anchor)
-        discordia.line(fit,wetherill=wetherill,d=x$d)
+        if(DOPLOT) discordia.line(fit,wetherill=wetherill,d=x$d)
         fit$n <- length(x2calc)
-        graphics::title(discordia.title(fit,wetherill=wetherill,sigdig=sigdig))
+        if(DOPLOT) graphics::title(discordia.title(fit,wetherill=wetherill,sigdig=sigdig))
     }
-    plot.concordia.line(X2plot,lims=lims,type=type,col=concordia.col,
-                        alpha=alpha,exterr=exterr,ticks=ticks)
+    if(DOPLOT){
+      plot.concordia.line(X2plot,lims=lims,type=type,col=concordia.col,
+                          alpha=alpha,exterr=exterr,ticks=ticks)
+    }
     if (type==1) y <- data2york(X,option=1)
     else if (type==2) y <- data2york(X,option=2)
     else if (x$format%in%c(7,8) & type==3) y <- data2york(X,option=5)
     else stop('Concordia type incompatible with this input format.')
-    scatterplot(y,alpha=alpha,show.numbers=show.numbers,
-                show.ellipses=1*(show.age!=3),levels=levels,
-                clabel=clabel,ellipse.fill=ellipse.fill,
-                ellipse.stroke=ellipse.stroke,add=TRUE,
-                hide=hide,omit=omit,omit.fill=omit.fill,
-                omit.stroke=omit.stroke,addcolourbar=FALSE,...)
+    if(DOPLOT){
+      scatterplot(y,alpha=alpha,show.numbers=show.numbers,
+                  show.ellipses=1*(show.age!=3),levels=levels,
+                  clabel=clabel,ellipse.fill=ellipse.fill,
+                  ellipse.stroke=ellipse.stroke,add=TRUE,
+                  hide=hide,omit=omit,omit.fill=omit.fill,
+                  omit.stroke=omit.stroke,addcolourbar=FALSE,...)
+    }
     if (show.age==1){
         X2calc <- subset(X,subset=calcit)
         fit <- concordia.age(X2calc,type=type,exterr=exterr,alpha=alpha)
-        ell <- ellipse(fit$x[1],fit$x[2],fit$cov)
-        graphics::polygon(ell,col='white')
         fit$n <- length(X2calc)
-        graphics::title(concordia.title(fit,sigdig=sigdig))
+        if(DOPLOT){
+          ell <- ellipse(fit$x[1],fit$x[2],fit$cov)
+          graphics::polygon(ell,col='white')
+          graphics::title(concordia.title(fit,sigdig=sigdig))
+        }
     }
-    # must be added to the end because otherwise R doesn't
-    # add the concordia ellipse to the scatterplot
-    colourbar(z=levels[calcit],fill=ellipse.fill,
-              stroke=ellipse.stroke,clabel=clabel)
+    if(DOPLOT){
+      # must be added to the end because otherwise R doesn't
+      # add the concordia ellipse to the scatterplot
+      colourbar(z=levels[calcit],fill=ellipse.fill,
+                stroke=ellipse.stroke,clabel=clabel)
+    }
     invisible(fit)
 }
 
