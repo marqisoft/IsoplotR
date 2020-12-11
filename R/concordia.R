@@ -315,7 +315,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
         if(DOPLOT){
           ell <- ellipse(fit$x[1],fit$x[2],fit$cov)
           graphics::polygon(ell,col='white')
-          graphics::title(concordia.title(fit,sigdig=sigdig))
+          concordia.title(fit,sigdig=sigdig)
         }
     }
     if(DOPLOT){

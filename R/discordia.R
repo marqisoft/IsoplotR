@@ -188,7 +188,7 @@ discordia.line <- function(fit,wetherill,d=diseq(),DOPLOT=TRUE,usr_force=NULL){
     l8 <- lambda('U238')[1]
     J <- matrix(0,1,2)
     #.Customized by marQIsoft:
-    if(usr_force) usr <- usr_force else {
+    if(!is.null(usr_force)) usr <- usr_force else {
       if(DOPLOT) usr <- graphics::par('usr') else stop("Some X bounds (usr_force[1:2]) must be provided if not DOPLOT!")
     }
     if (wetherill){
