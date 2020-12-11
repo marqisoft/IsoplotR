@@ -269,6 +269,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
                       show.age=0,sigdig=2,common.Pb=0,ticks=5,
                       anchor=list(FALSE,NA),hide=NULL,omit=NULL,
                       omit.fill=NA,omit.stroke='grey',DOPLOT=TRUE,...){    
+#.Customized FUNCTION, by marQIsoft:
     if (is.null(x)){
         emptyconcordia(tlim=tlim,alpha=alpha,type=type,exterr=exterr,
                        concordia.col=concordia.col,ticks=ticks,...)
@@ -280,7 +281,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
     if (common.Pb<1) X <- x
     else X <- Pb0corr(x,option=common.Pb,omit4c=unique(c(hide,omit)))
     X2plot <- subset(X,subset=plotit)
-    if(DOPLOT) lims <- prepare.concordia.line(x=X2plot,tlim=tlim,type=type,...)
+    lims <- prepare.concordia.line(x=X2plot,tlim=tlim,type=type,DOPLOT=DOPLOT,...)
     fit <- NULL
     if (show.age>1){
         wetherill <- (type==1)
@@ -289,7 +290,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
                                              alpha=alpha,model=(show.age-1),anchor=anchor)
         if(DOPLOT) discordia.line(fit,wetherill=wetherill,d=x$d)
         fit$n <- length(x2calc)
-        if(DOPLOT) graphics::title(discordia.title(fit,wetherill=wetherill,sigdig=sigdig))
+        titlelinesL <- discordia.title(fit,wetherill=wetherill,sigdig=sigdig,DOPLOT=DOPLOT)
     }
     if(DOPLOT){
       plot.concordia.line(X2plot,lims=lims,type=type,col=concordia.col,
@@ -373,7 +374,8 @@ plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
     graphics::box()
 }
 # helper function for plot.concordia
-prepare.concordia.line <- function(x,tlim,type=1,...){
+#.Customized FUNCTION, by marQIsoft:
+prepare.concordia.line <- function(x,tlim,type=1,DOPLOT=TRUE,...){
     lims <- get.concordia.limits(x,tlim=tlim,type=type,...)
     if (type==1){
         y.lab <- expression(paste(""^"206","Pb/"^"238","U"))
@@ -387,7 +389,7 @@ prepare.concordia.line <- function(x,tlim,type=1,...){
     } else {
         stop('Incorrect input format.')
     }
-    graphics::plot(lims$x,lims$y,type='n',xlab=x.lab,ylab=y.lab,bty='n',...)
+    if(DOPLOT) graphics::plot(lims$x,lims$y,type='n',xlab=x.lab,ylab=y.lab,bty='n',...)
     if (measured.disequilibrium(x$d)){
         lims <- clip.diseq(lims,type=type,d=x$d)
     }
@@ -544,7 +546,8 @@ get.concordia.limits <- function(x,tlim=NULL,type=1,xlim,ylim,...){
 }
 
 # this would be much easier in unicode but that doesn't render in PDF:
-concordia.title <- function(fit,sigdig=2,alpha=0.05,...){
+#.Customized FUNCTION, by marQIsoft:
+concordia.title <- function(fit,sigdig=2,alpha=0.05,DOPLOT=TRUE,...){
     rounded.age <- roundit(fit$age[1],fit$age[-1],sigdig=sigdig)
     expr1 <- expression('concordia age ='~a%+-%b~'|'~c~'Ma (n='*n*')')
     list1 <- list(a=rounded.age[1],b=rounded.age[2],c=rounded.age[3],n=fit$n)
@@ -561,8 +564,9 @@ concordia.title <- function(fit,sigdig=2,alpha=0.05,...){
                              d=signif(fit$p.value['concordance'],2),
                              e=signif(fit$p.value['equivalence'],2),
                              f=signif(fit$p.value['combined'],2)))
-    mymtext(line1,line=1,...)
-    mymtext(line2,line=0,...)
+    if(DOPLOT) mymtext(line1,line=1,...)
+    if(DOPLOT) mymtext(line2,line=0,...)
+    list(line1,line2)
 }
 
 concordia.age <- function(x,i=NA,type=1,exterr=TRUE,alpha=0.05,...){
@@ -765,8 +769,9 @@ get.concordia.SS <- function(x,covmat){
     x %*% solve(covmat) %*% t(x)
 }
 
+#.Customized FUNCTION, by marQIsoft:
 emptyconcordia <- function(tlim=NULL,alpha=0.05,type=1,exterr=TRUE,
-                           concordia.col='darksalmon',ticks=5,...){
+                           concordia.col='darksalmon',ticks=5,DOPLOT=TRUE,...){
     if (is.null(tlim) && type%in%c(1,3)) tlim <- c(1,3500)
     else if (is.null(tlim)) tlim <- c(100,3500)
     dat <- list()
@@ -793,7 +798,12 @@ emptyconcordia <- function(tlim=NULL,alpha=0.05,type=1,exterr=TRUE,
     } else {
         stop('Invalid concordia type.')
     }
-    lims <- prepare.concordia.line(x=dat,tlim=tlim,type=type,...)
-    plot.concordia.line(x=dat,lims=lims,type=type,col=concordia.col,
-                        alpha=alpha,exterr=exterr,ticks=ticks)
+    #.Customized by marQIsoft:
+    lims <- prepare.concordia.line(x=dat,tlim=tlim,type=type,DOPLOT=DOPLOT,...)
+    if(DOPLOT){
+      plot.concordia.line(x=dat,lims=lims,type=type,col=concordia.col,
+                          alpha=alpha,exterr=exterr,ticks=ticks)
+    }
+    #.Customized:added by marQIsoft:
+    list(x=dat, lims=lims, alpha=alpha, type=type, exterr=exterr)
 }

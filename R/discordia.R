@@ -180,13 +180,17 @@ intersection.misfit.york <- function(tt,a,b,d=diseq()){
     (D$Pb207Pb206-a)*D$Pb206U238 - b
 }
 
-discordia.line <- function(fit,wetherill,d=diseq()){
+#.Customized FUNCTION, by marQIsoft:
+discordia.line <- function(fit,wetherill,d=diseq(),DOPLOT=TRUE,usr_force=NULL){
     X <- c(0,0)
     Y <- c(0,0)
     l5 <- lambda('U235')[1]
     l8 <- lambda('U238')[1]
     J <- matrix(0,1,2)
-    usr <- graphics::par('usr')
+    #.Customized by marQIsoft:
+    if(usr_force) usr <- usr_force else {
+      if(DOPLOT) usr <- graphics::par('usr') else stop("Some X bounds (usr_force[1:2]) must be provided if not DOPLOT!")
+    }
     if (wetherill){
         tl <- fit$par[1]
         tu <- fit$par[2]
@@ -264,8 +268,12 @@ discordia.line <- function(fit,wetherill,d=diseq()){
         cix <- c(x,rev(x))
         ciy <- c(ll,rev(ul))
     }
-    graphics::polygon(cix,ciy,col='gray80',border=NA)
-    graphics::lines(X,Y)
+    if(DOPLOT) { #.Customized by marQIsoft:
+      graphics::polygon(cix,ciy,col='gray80',border=NA)
+      graphics::lines(X,Y)
+    }
+    #.Customized: ADDED OUTPUT! by marQIsoft:
+    list(X=X, Y=Y, cix=cix, ciy=ciy)
 }
 
 tw3d2d <- function(fit){
@@ -285,7 +293,8 @@ tw3d2d <- function(fit){
 }
 
 # this would be much easier in unicode but that doesn't render in PDF:
-discordia.title <- function(fit,wetherill,sigdig=2,...){
+#.Customized FUNCTION, by marQIsoft:
+discordia.title <- function(fit,wetherill,sigdig=2,DOPLOT=TRUE,...){
     lower.age <- roundit(fit$par[1],fit$err[,1],sigdig=sigdig)
     if (fit$model==1 && fit$mswd>1){
         args1 <- quote(a%+-%b~'|'~c~'|'~d~u~'(n='*n*')')
@@ -364,30 +373,38 @@ discordia.title <- function(fit,wetherill,sigdig=2,...){
                             list(a=rounded.disp[1],b=rounded.disp[3],c=rounded.disp[2]))
     }
     extrarow <- fit$format>3 & !wetherill
+    outLinesI <- c()
     if (fit$model==1 & extrarow){
-        mymtext(line1,line=3,...)
-        mymtext(line2,line=2,...)
-        mymtext(line3,line=1,...)
-        mymtext(line4,line=0,...)
+        if(DOPLOT) mymtext(line1,line=3,...)
+        if(DOPLOT) mymtext(line2,line=2,...)
+        if(DOPLOT) mymtext(line3,line=1,...)
+        if(DOPLOT) mymtext(line4,line=0,...)
+        outLinesI <- c(1,2,3,4)
     } else if (fit$model==2 & extrarow){
-        mymtext(line1,line=2,...)
-        mymtext(line2,line=1,...)
-        mymtext(line3,line=0,...)
+        if(DOPLOT) mymtext(line1,line=2,...)
+        if(DOPLOT) mymtext(line2,line=1,...)
+        if(DOPLOT) mymtext(line3,line=0,...)
+        outLinesI <- c(1,2,3)
     } else if (fit$model==3 & extrarow){
-        mymtext(line1,line=3,...)
-        mymtext(line2,line=2,...)
-        mymtext(line3,line=1,...)
-        mymtext(line4,line=0,...)
+        if(DOPLOT) mymtext(line1,line=3,...)
+        if(DOPLOT) mymtext(line2,line=2,...)
+        if(DOPLOT) mymtext(line3,line=1,...)
+        if(DOPLOT) mymtext(line4,line=0,...)
+        outLinesI <- c(1,2,3,4)
     } else if (fit$model==1){
-        mymtext(line1,line=2,...)
-        mymtext(line2,line=1,...)
-        mymtext(line4,line=0,...)
+        if(DOPLOT) mymtext(line1,line=2,...)
+        if(DOPLOT) mymtext(line2,line=1,...)
+        if(DOPLOT) mymtext(line4,line=0,...)
+        outLinesI <- c(1,2,4)
     } else if (fit$model==2){
-        mymtext(line1,line=1,...)
-        mymtext(line2,line=0,...)
+        if(DOPLOT) mymtext(line1,line=1,...)
+        if(DOPLOT) mymtext(line2,line=0,...)
+        outLinesI <- c(1,2)
     } else if (fit$model==3){
-        mymtext(line1,line=2,...)
-        mymtext(line2,line=1,...)
-        mymtext(line4,line=0,...)
+        if(DOPLOT) mymtext(line1,line=2,...)
+        if(DOPLOT) mymtext(line2,line=1,...)
+        if(DOPLOT) mymtext(line4,line=0,...)
+        outLinesI <- c(1,2,4)
     }
+    if(length(outLinesI) > 0L) list(line1,line2,line3,line4)[outLinesI] else NULL
 }
