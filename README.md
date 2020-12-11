@@ -1,3 +1,6 @@
+# Custom modifs by marqisoft:
+- The aim of those is to make the plotting parts optional.
+
 # IsoplotR
 
 **IsoplotR** is a free and open-source substitute for Kenneth Ludwig's
