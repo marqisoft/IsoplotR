@@ -268,7 +268,8 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
                       concordia.col='darksalmon',exterr=FALSE,
                       show.age=0,sigdig=2,common.Pb=0,ticks=5,
                       anchor=list(FALSE,NA),hide=NULL,omit=NULL,
-                      omit.fill=NA,omit.stroke='grey',DOPLOT=TRUE,...){    
+                      omit.fill=NA,omit.stroke='grey',
+                      DOPLOT=TRUE,OUTMORE=FALSE,NbELL=30,...){
 #.Customized FUNCTION, by marQIsoft:
     if (is.null(x)){
         emptyconcordia(tlim=tlim,alpha=alpha,type=type,exterr=exterr,
@@ -288,14 +289,13 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
         x2calc <- subset(x,subset=calcit)
         fit <- concordia.intersection.ludwig(x2calc,wetherill=wetherill,exterr=exterr,
                                              alpha=alpha,model=(show.age-1),anchor=anchor)
-        if(DOPLOT) discordia.line(fit,wetherill=wetherill,d=x$d)
+        discolineL <- discordia.line(fit,wetherill=wetherill,d=x$d,DOPLOT=DOPLOT) #.(Output)
         fit$n <- length(x2calc)
-        titlelinesL <- discordia.title(fit,wetherill=wetherill,sigdig=sigdig,DOPLOT=DOPLOT)
-    }
-    if(DOPLOT){
-      plot.concordia.line(X2plot,lims=lims,type=type,col=concordia.col,
-                          alpha=alpha,exterr=exterr,ticks=ticks)
-    }
+        titlelinesL <- discordia.title(fit,wetherill=wetherill,sigdig=sigdig,DOPLOT=DOPLOT) #.(Output)
+    } else discolineL <- NULL
+    conclineL <- plot.concordia.line(X2plot,lims=lims,type=type,col=concordia.col,
+                                     alpha=alpha,exterr=exterr,ticks=ticks,
+                                     DOPLOT=DOPLOT,NbELL=NbELL) #.(Output)
     if (type==1) y <- data2york(X,option=1)
     else if (type==2) y <- data2york(X,option=2)
     else if (x$format%in%c(7,8) & type==3) y <- data2york(X,option=5)
@@ -312,24 +312,31 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
         X2calc <- subset(X,subset=calcit)
         fit <- concordia.age(X2calc,type=type,exterr=exterr,alpha=alpha)
         fit$n <- length(X2calc)
-        if(DOPLOT){
-          ell <- ellipse(fit$x[1],fit$x[2],fit$cov)
-          graphics::polygon(ell,col='white')
-          concordia.title(fit,sigdig=sigdig)
-        }
-    }
+        ell <- ellipse(fit$x[1],fit$x[2],fit$cov)
+        if(DOPLOT) graphics::polygon(ell,col='white')
+        titlelinesL <- concordia.title(fit,sigdig=sigdig,DOPLOT=DOPLOT)
+        concage_1ellM <- ell #.(Output)
+    } else concage_1ellM <- NULL #.(Output:none)
     if(DOPLOT){
       # must be added to the end because otherwise R doesn't
       # add the concordia ellipse to the scatterplot
       colourbar(z=levels[calcit],fill=ellipse.fill,
                 stroke=ellipse.stroke,clabel=clabel)
     }
-    invisible(fit)
+    if(OUTMORE) {
+      outL <- c(fit, list(MORE=list(lims=lims, y_data2york=y))) #(fit with MORE)
+      outL$MORE$titlelines <- titlelinesL
+      outL$MORE$concline <- conclineL
+      if(show.age > 1) outL$MORE$discordia_line <- discolineL
+      if(show.age == 1) outL$MORE$concordia_age_ellipse <- concage_1ellM
+      invisible(outL)
+    } else invisible(fit)
 }
 
 # helper function for plot.concordia
+#.. Note: In argument lims, only lims$t matters: other elements ($x $y) are not used.
 plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
-                                alpha=0.05,exterr=TRUE,ticks=5){
+                                alpha=0.05,exterr=TRUE,ticks=5,DOPLOT=T,NbELL=30){
     if (all(is.null(x$x))){
         m <- 0
         M <- 4500
@@ -338,40 +345,103 @@ plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
         m <- max(0.8*lims$t[1],lims$t[1]-range.t/20)
         M <- min(1.2*lims$t[2],lims$t[2]+range.t/20)
     }
-    nn <- 30 # number of segments into which the concordia line is divided
+    nn <- NbELL # number of segments into which the concordia line is divided
     tt <- cseq(m,M,type=type,n=nn)
     conc <- matrix(0,nn,2)
     colnames(conc) <- c('x','y')
+    concfullxyL <- vector("list", nn)
+    #New Custom output: decay constant uncertainty:
+    if(exterr) {
+      dcuLowerM <- matrix(0.0, nrow=nn, ncol=2L, dimnames=list(1:nn, c("X","Y")))
+      dcuUpperM <- matrix(0.0, nrow=nn, ncol=2L, dimnames=list(1:nn, c("X","Y")))
+    }
     for (i in 1:nn){ # build the concordia line
         xy <- age_to_concordia_ratios(tt[i],type=type,exterr=exterr,d=x$d[i])
         if (exterr){ # show decay constant uncertainty
             if (i > 1) oldell <- ell
             ell <- ellipse(xy$x[1],xy$x[2],xy$cov,alpha=alpha)
+            #.REMINDER: Points are positioned counterclockwise starting at 3:00,
+            #.. and note that the last point =(returns to)= the first point XY!!
             if (i > 1){
                 xycd <- rbind(oldell,ell)
                 ii <- grDevices::chull(xycd)
-                graphics::polygon(xycd[ii,],col=col,border=NA)
+                if(DOPLOT) graphics::polygon(xycd[ii,],col=col,border=NA)
+#                ii2logiV <- logical(2L*npts_1ell)
+#                ii2logiV[ii] <- T
+#                ellxyselM[npts_1ell*(i-2L) + 1L:(2L*npts_1ell), i] <- ii2logiV
+                ii_prev_all <- ii[ii <= npts_1ell]
+                ii_curr_all <- ii[ii > npts_1ell]
+                ii_prev_2pts <- ii_prev_all[c(1L, length(ii_prev_all))]
+                ii_curr_2pts <- ii_curr_all[c(1L, length(ii_curr_all))]
+                ii_curr_lowi <- ii_curr_2pts[which.min(xycd[ii_curr_2pts,"y"])]
+                ii_curr_uppi <- ii_curr_2pts[which.max(xycd[ii_curr_2pts,"y"])]
+                dcuLowerM[i, ] <- xycd[ii_curr_lowi, ]
+                dcuUpperM[i, ] <- xycd[ii_curr_uppi, ]
+                if(i == 2) {
+                  ii_prev_lowi <- ii_prev_2pts[which.min(xycd[ii_prev_2pts,"y"])]
+                  ii_prev_uppi <- ii_prev_2pts[which.max(xycd[ii_prev_2pts,"y"])]
+                  dcuLowerM[i-1, ] <- xycd[ii_prev_lowi, ]
+                  dcuUpperM[i-1, ] <- xycd[ii_prev_uppi, ]
+                }
+                #VERIFY the custom codes dcuLowerM...etc...:
+#                plot(xycd)
+#                #OR: prepare.concordia.line(x=X2plot,tlim=tlim,type=type,DOPLOT=T,...)
+#                points(dcuLowerM, cex=4, pch=2, lwd=3)
+#                points(dcuUpperM, cex=4, pch=6, lwd=3)
+#                lines(dcuLowerM)
+#                lines(dcuUpperM)
+#                lines(conc, col="red")
+                #FOR UNDERSTANDING:
+#                 #plot(oldell, type="n"); text(oldell, cex=0.5)
+#                 #plot(ell, type="n"); text(ell, cex=0.5)
+#                 plot(xycd)
+#                 polygon(xycd[ii,],col="gray",border=NA)
+#                 text(as.list(apply(ell,2,mean)), labels=i, cex=1.5, font=2)
+#                 points(as.data.frame(xycd[ii_prev_2pts,]), pch=c(4,1), cex=2, col="blue", lwd=3)
+#                 points(as.data.frame(xycd[ii_curr_2pts,]), pch=c(4,1), cex=2, col="red", lwd=3)
+#                 dev.flush()
+#                 Sys.sleep(1)
+            } else {
+              npts_1ell <- nrow(ell)
+#              ellxyselM <- matrix(F, nrow=npts_1ell*nn, ncol=nn)
+#              ellxyselM[1L:npts_1ell, 1L] <- T
             }
         }
         conc[i,] <- xy$x
+        concfullxyL[[i]] <- xy
+    }
+    out_conclineL <- list(n=nn, ttV=tt, xyM=conc, xycovL=concfullxyL) #.(Output)
+    if(exterr) {
+      out_conclineL$dcu_lowerxyM <- dcuLowerM
+      out_conclineL$dcu_upperxyM <- dcuUpperM
     }
     if (length(ticks)<2)
         ticks <- prettier(lims$t,type=type,n=ticks)
-    graphics::lines(conc[,'x'],conc[,'y'],col=col,lwd=2)
+    if(DOPLOT) graphics::lines(conc[,'x'],conc[,'y'],col=col,lwd=2)
+    ticks_agesV <- ticks
+    ticks_xycovL <- vector("list", length(ticks))
+    ticks_ellL <- if(exterr) vector("list", length(ticks)) else NULL
     for (i in 1:length(ticks)){
         xy <- age_to_concordia_ratios(ticks[i],type=type,exterr=exterr,d=x$d[i])
+        ticks_xycovL[[i]] <- xy
         if (exterr){ # show ticks as ellipse
             ell <- ellipse(xy$x[1],xy$x[2],xy$cov,alpha=alpha)
-            graphics::polygon(ell,col='white')
+            ticks_ellL[[i]] <- ell
+            if(DOPLOT) graphics::polygon(ell,col='white')
         } else {
-            graphics::points(xy$x[1],xy$x[2],pch=21,bg='white')
+            if(DOPLOT) graphics::points(xy$x[1],xy$x[2],pch=21,bg='white')
         }
-        pos <- 2
-        if ((type%in%c(1,2)  & diff(range(conc[,'x'],na.rm=TRUE))<0.05) |
-            (type==2 & diff(range(conc[,'x'],na.rm=TRUE))<2.5) & exterr){ pos <- NULL }
-        graphics::text(xy$x[1],xy$x[2],as.character(ticks[i]),pos=pos)
+        if(DOPLOT) {
+          pos <- 2
+          if ((type%in%c(1,2)  & diff(range(conc[,'x'],na.rm=TRUE))<0.05) |
+              (type==2 & diff(range(conc[,'x'],na.rm=TRUE))<2.5) & exterr){ pos <- NULL }
+          graphics::text(xy$x[1],xy$x[2],as.character(ticks[i]),pos=pos)
+        }
     }
-    graphics::box()
+    if(DOPLOT) graphics::box()
+    out_ticksL <- list(agesV=ticks_agesV, xycovL=ticks_xycovL, ellipsesL=ticks_ellL) #.(Output)
+    #..Output results (even when DOPLOT is FALSE):
+    list(conclineL=out_conclineL, ticksL=out_ticksL)
 }
 # helper function for plot.concordia
 #.Customized FUNCTION, by marQIsoft:

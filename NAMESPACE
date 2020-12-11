@@ -160,4 +160,7 @@ export(settings)
 export(titterington)
 export(weightedmean)
 export(york)
+export(concordia.age) #.. ADDED by marQIsoft
+export(concordia.intersection.ludwig) #.. ADDED by marQIsoft
+export(discordia.line) #.. ADDED by marQIsoft
 importFrom(grDevices,rgb)
