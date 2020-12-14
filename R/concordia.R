@@ -459,7 +459,7 @@ plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
     if(exterr) {
       out_ticksL <- list(agesV=ticks_agesV, xycovL=ticks_xycovL, ellipsesL=ticks_ellL) #.(Output)
     } else {
-      xyM <- rbind(lapply(ticks_xycovL, getElement, "x"))
+      xyM <- do.call(rbind, lapply(ticks_xycovL, getElement, "x"))
       out_ticksL <- list(agesV=ticks_agesV, xyM=xyM) #.(Output)
     }
     #..Output results (even when DOPLOT is FALSE):
