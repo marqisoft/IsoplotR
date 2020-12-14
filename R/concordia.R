@@ -328,6 +328,8 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
     }
     if(OUTMORE && (show.age > 0)) {
       outL <- c(fit, list(MORE=list())) #(fit with MORE)
+      #Note 1: fit$exterr exists only in discordia mode, that is why exterr
+      # should rather be obtained from outL$MORE$concordia_exterr (see below).
       outL$MORE$input_format <- x$format
       outL$MORE$input_dataDF <- as.data.frame(x$x)
       outL$MORE$input_tocalc <- calcit
@@ -336,6 +338,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
       outL$MORE$discordia_age_model <- (show.age - 1) #(case 0 = concordant age)
       outL$MORE$concordia_type_num <- type
       outL$MORE$concordia_type_txt <- c("Wetherill", "Tera-Wasserburg", "U-Th-Pb concordia")[type]
+      outL$MORE$concordia_exterr <- exterr #(with decay constant uncertainties?)
       outL$MORE$lims <- lims
       outL$MORE$y_data2york <- y
       outL$MORE$titlelines <- titlelinesL
@@ -423,7 +426,8 @@ plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
         conc[i,] <- xy$x
         concfullxyL[[i]] <- xy
     }
-    out_conclineL <- list(n=nn, ttV=tt, xyM=conc, xycovL=concfullxyL) #.(Output)
+    out_conclineL <- list(n=nn, ttV=tt, xyM=conc) #.(Output)
+    if(exterr) out_conclineL$xycovL <- concfullxyL #(else not included: it would only contain zeroes!)
     if(exterr) {
       out_conclineL$dcu_lowerxyM <- dcuLowerM
       out_conclineL$dcu_upperxyM <- dcuUpperM
@@ -452,7 +456,12 @@ plot.concordia.line <- function(x,lims,type=1,col='darksalmon',
         }
     }
     if(DOPLOT) graphics::box()
-    out_ticksL <- list(agesV=ticks_agesV, xycovL=ticks_xycovL, ellipsesL=ticks_ellL) #.(Output)
+    if(exterr) {
+      out_ticksL <- list(agesV=ticks_agesV, xycovL=ticks_xycovL, ellipsesL=ticks_ellL) #.(Output)
+    } else {
+      xyM <- rbind(lapply(ticks_xycovL, getElement, "x"))
+      out_ticksL <- list(agesV=ticks_agesV, xyM=xyM) #.(Output)
+    }
     #..Output results (even when DOPLOT is FALSE):
     list(conclineL=out_conclineL, ticksL=out_ticksL)
 }
