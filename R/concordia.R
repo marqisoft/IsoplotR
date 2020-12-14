@@ -289,7 +289,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
         x2calc <- subset(x,subset=calcit)
         fit <- concordia.intersection.ludwig(x2calc,wetherill=wetherill,exterr=exterr,
                                              alpha=alpha,model=(show.age-1),anchor=anchor)
-        discolineL <- discordia.line(fit,wetherill=wetherill,d=x$d,DOPLOT=DOPLOT) #.(Output)
+        discolineL <- discordia.line(fit,wetherill=wetherill,d=x$d,DOPLOT=DOPLOT, usr_force=lims$x) #.(Output)
         fit$n <- length(x2calc)
         titlelinesL <- discordia.title(fit,wetherill=wetherill,sigdig=sigdig,DOPLOT=DOPLOT) #.(Output)
     } else discolineL <- NULL
