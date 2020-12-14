@@ -188,14 +188,20 @@ discordia.line <- function(fit,wetherill,d=diseq(),DOPLOT=TRUE,usr_force=NULL){
     l8 <- lambda('U238')[1]
     J <- matrix(0,1,2)
     #.Customized by marQIsoft:
-    if(!is.null(usr_force)) usr <- usr_force else {
-      if(DOPLOT) usr <- graphics::par('usr') else stop("Some X bounds (usr_force[1:2]) must be provided if not DOPLOT!")
+    usrAUTOset <- FALSE
+    if(!is.null(usr_force)) {
+      usr <- usr_force
+      if(length(usr_force) < 2L) stop("Invalid usr_force argument! Must be a numeric vector of length 2 at least! (xmin, xmax)")
+    } else {
+      if(DOPLOT) usr <- graphics::par('usr') else usrAUTOset <- TRUE #(i.e. will set usr automatically later below... only if wetherill!)
+      if(!wetherill) stop("Some X bounds (usr_force[1:2]) must be provided if not DOPLOT & not wetherill!")
     }
     if (wetherill){
         tl <- fit$par[1]
         tu <- fit$par[2]
         X <- age_to_Pb207U235_ratio(fit$par,d=d)[,'75']
         Y <- age_to_Pb206U238_ratio(fit$par,d=d)[,'68']
+        if(usrAUTOset) usr <- extendrange(X)
         x <- seq(from=max(0,usr[1],X[1]),to=min(usr[2],X[2]),length.out=50)
         du <- mclean(tt=tu,d=d)
         dl <- mclean(tt=tl,d=d)

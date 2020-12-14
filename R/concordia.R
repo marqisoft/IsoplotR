@@ -269,7 +269,8 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
                       show.age=0,sigdig=2,common.Pb=0,ticks=5,
                       anchor=list(FALSE,NA),hide=NULL,omit=NULL,
                       omit.fill=NA,omit.stroke='grey',
-                      DOPLOT=TRUE,OUTMORE=FALSE,NbELL=30,...){
+                      DOPLOT=TRUE,OUTMORE=FALSE,NbELL=30,
+                      discoline.xlims.force=NULL,...){
 #.Customized FUNCTION, by marQIsoft:
     if (is.null(x)){
         emptyconcordia(tlim=tlim,alpha=alpha,type=type,exterr=exterr,
@@ -289,7 +290,8 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
         x2calc <- subset(x,subset=calcit)
         fit <- concordia.intersection.ludwig(x2calc,wetherill=wetherill,exterr=exterr,
                                              alpha=alpha,model=(show.age-1),anchor=anchor)
-        discolineL <- discordia.line(fit,wetherill=wetherill,d=x$d,DOPLOT=DOPLOT, usr_force=lims$x) #.(Output)
+        discolineL <- discordia.line(fit,wetherill=wetherill,d=x$d,DOPLOT=DOPLOT,
+                                     usr_force=discoline.xlims.force) #.(Output)
         fit$n <- length(x2calc)
         titlelinesL <- discordia.title(fit,wetherill=wetherill,sigdig=sigdig,DOPLOT=DOPLOT) #.(Output)
     } else discolineL <- NULL
