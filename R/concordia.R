@@ -327,7 +327,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
       outL <- c(fit, list(MORE=list())) #(fit with MORE)
       out$MORE$input_format <- x$format
       out$MORE$input_dataDF <- as.data.frame(x$x)
-      out$MORE$common_Pb_corr_algo <- common.Pb, #(case 0 = none)
+      out$MORE$common_Pb_corr_algo <- common.Pb #(case 0 = none)
       out$MORE$discordia_age_model <- (show.age - 1) #(case 0 = concordant age)
       out$MORE$concordia_type_num <- type
       out$MORE$concordia_type_txt <- c("Wetherill", "Tera-Wasserburg", "U-Th-Pb concordia")[type]
