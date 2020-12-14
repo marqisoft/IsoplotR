@@ -323,10 +323,18 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
       colourbar(z=levels[calcit],fill=ellipse.fill,
                 stroke=ellipse.stroke,clabel=clabel)
     }
-    if(OUTMORE) {
-      outL <- c(fit, list(MORE=list(lims=lims, y_data2york=y))) #(fit with MORE)
+    if(OUTMORE && (show.age > 0)) {
+      outL <- c(fit, list(MORE=list())) #(fit with MORE)
+      out$MORE$input_format <- x$format
+      out$MORE$input_dataDF <- as.data.frame(x$x)
+      out$MORE$common_Pb_corr_algo <- common.Pb, #(case 0 = none)
+      out$MORE$discordia_age_model <- (show.age - 1) #(case 0 = concordant age)
+      out$MORE$concordia_type_num <- type
+      out$MORE$concordia_type_txt <- c("Wetherill", "Tera-Wasserburg", "U-Th-Pb concordia")[type]
+      out$MORE$lims <- lims
+      out$MORE$y_data2york <- y
       outL$MORE$titlelines <- titlelinesL
-      outL$MORE$concline <- conclineL
+      outL$MORE$concordia_line <- conclineL
       if(show.age > 1) outL$MORE$discordia_line <- discolineL
       if(show.age == 1) outL$MORE$concordia_age_ellipse <- concage_1ellM
       invisible(outL)
