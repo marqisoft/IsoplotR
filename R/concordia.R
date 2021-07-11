@@ -335,6 +335,7 @@ concordia <- function(x=NULL,tlim=NULL,alpha=0.05,type=1,
       outL$MORE$input_tocalc <- calcit
       outL$MORE$input_toplot <- plotit
       outL$MORE$common_Pb_corr_algo <- common.Pb #(case 0 = none)
+      outL$MORE$X_after_corr_dataDF <- as.data.frame(X$x) #.. (Added 11/07/2021) #Table of ratio values eventually changed by an optional common.Pb correction (if any) else it will be the same as $input_dataDF = x$x
       outL$MORE$discordia_age_model <- (show.age - 1) #(case 0 = concordant age)
       outL$MORE$concordia_type_num <- type
       outL$MORE$concordia_type_txt <- c("Wetherill", "Tera-Wasserburg", "U-Th-Pb concordia")[type]
